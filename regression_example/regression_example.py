@@ -3,7 +3,7 @@
 # dataset based on 1990 California Census - predict a district's median housing price
 import os
 import tarfile
-import urllib
+import urllib.request
 import pandas as pd
 
 # fetching the data
@@ -25,6 +25,9 @@ def load_housing_data(housing_path=HOUSING_PATH):
     csv_path = os.path.join(housing_path, "housing.csv")
     return pd.read_csv(csv_path)
 
-fetch_housing_data()
+
+# fetch_housing_data() //uncomment to load the tgz file
+# pandas dataset
 housing = load_housing_data()
-print(housing.head())
+# housing.info() will show description of data and data types
+# houseing.describe() will show summary of statistical attributes
