@@ -5,6 +5,7 @@ import os
 import tarfile
 import urllib.request
 import pandas as pd
+from pandas.plotting import scatter_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -67,3 +68,24 @@ for train_index, test_index in split.split(housing, housing["income_cat"]):
 # remove the income_cat attribute so the data is back to original state
 for set_ in (strat_train_set, strat_test_set):
     set_.drop("income_cat", axis=1, inplace=True)
+
+# Visualizing the Training Set
+# create a copy of the training set so the original isn't changed
+housing = strat_train_set.copy()
+# scatter plot that georgraphically shows the housing prices in california
+housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.4, 
+    s=housing["population"]/100, label = "population", figsize=(10,7),
+    c="median_house_value", cmap=plt.get_cmap("jet"), colorbar=True
+)
+plt.legend()
+# use plt.show() to see the plot
+
+# computing the Standard Correlation Coefficient for each feature
+# closer to postive 1 means stronger correlation, close to 0 no correlation, -1 negative correlation
+corr_matrix = housing.corr()
+corr_matrix["median_house_value"].sort_values(ascending=False)
+# print above statement to view the values
+# ***ANOTHER WAY****
+# plotting the scatter plot of each feature using Panda's scatter_matrix
+attributes = ["median_house_value", "median_income", "total_rooms", "housing_median_age"]
+print(scatter_matrix(housing[attributes], figsize=(12,8)))
