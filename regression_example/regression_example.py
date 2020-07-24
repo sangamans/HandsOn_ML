@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OrdinalEncoder
 
 # fetching the data
 DOWNLOAD_ROUTE = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
@@ -102,4 +104,28 @@ corr_matrix = housing.corr()
 corr_matrix["median_house_value"].sort_values(ascending=False)
 # print the above statement to see the values
 
+# ***PREPARING THE DATA FOR MACHINE LEARNING***
+# separate predictors and labels
+housing = strat_train_set.drop("median_house_value", axis=1)
+housing_labels = strat_train_set["median_house_value"].copy()
+# clean the data
+# - total bedrooms has some missing values; use drop method, dropna, or fillna to fill all the missing data with the median value
+#   option 1 : housing.dropna(subset=["total_bedrooms"])
+#   option 2 : housing.drop("total_bedrooms", axis=1)
+#   option 3 : median = housing["total_bedrooms"].median()
+#   option 3 : housing["total_bedrooms"].fillna(median, inplace=True)
+#   NOTE: if option 3 is chosen replace the missing values in the test set as well
+#   Scikit-Learn to take care of missing values (replacing missing data with median)
+imputer = SimpleImputer(strategy="median")
+# only used for data without text attribute
+housing_num = housing.drop("ocean_proximity", axis=1)
+# fit the imputer to training set; computed the median for each attribute (print imputer.statistics_ to view or print housing_num.median().values)
+imputer.fit(housing_num)
+# use trained imputer to transform training set by replacing missing values with learned medians
+X = imputer.transform(housing_num)
+# this will be a NumPy array; transform to pandas data frame
+housing_tr = pd.DataFrame(X, coulmns=housing_num.columns)
 
+# converting the ocean_proximity; text to numbers
+# Scikit-Learn's OrdinalEncoder
+ordinal_encoder = OrdinalEncoder()
