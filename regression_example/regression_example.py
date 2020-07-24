@@ -69,7 +69,7 @@ for train_index, test_index in split.split(housing, housing["income_cat"]):
 for set_ in (strat_train_set, strat_test_set):
     set_.drop("income_cat", axis=1, inplace=True)
 
-# Visualizing the Training Set
+# ***Visualizing the Training Set***
 # create a copy of the training set so the original isn't changed
 housing = strat_train_set.copy()
 # scatter plot that georgraphically shows the housing prices in california
@@ -88,4 +88,18 @@ corr_matrix["median_house_value"].sort_values(ascending=False)
 # ***ANOTHER WAY****
 # plotting the scatter plot of each feature using Panda's scatter_matrix
 attributes = ["median_house_value", "median_income", "total_rooms", "housing_median_age"]
-print(scatter_matrix(housing[attributes], figsize=(12,8)))
+scatter_matrix(housing[attributes], figsize=(12,8))
+
+# transform tail heavy features to be more normal (take the log of it)
+# ***Attribute Combinations***
+# in this case total number of rooms is not useful if you dont know how many houses there are
+# total number of bedrooms not useful without the number of rooms
+housing["rooms_per_household"] = housing["total_rooms"] / housing["households"]
+housing["bedrooms_per_room"] = housing["total_bedrooms"] / housing["total_rooms"]
+housing["population_per_household"] = housing["population"] / housing["households"]
+# now looking at the correlations with the new features
+corr_matrix = housing.corr()
+corr_matrix["median_house_value"].sort_values(ascending=False)
+# print the above statement to see the values
+
+
