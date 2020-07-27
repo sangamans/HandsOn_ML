@@ -12,6 +12,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
 
 # fetching the data
 DOWNLOAD_ROUTE = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
@@ -124,8 +127,59 @@ imputer.fit(housing_num)
 # use trained imputer to transform training set by replacing missing values with learned medians
 X = imputer.transform(housing_num)
 # this will be a NumPy array; transform to pandas data frame
-housing_tr = pd.DataFrame(X, coulmns=housing_num.columns)
+housing_tr = pd.DataFrame(X, columns=housing_num.columns)
 
+# ****HANDLING TEXT AND CATEGORICAL ATTRIBUTE****
 # converting the ocean_proximity; text to numbers
+housing_cat = housing[["ocean_proximity"]]
 # Scikit-Learn's OrdinalEncoder
 ordinal_encoder = OrdinalEncoder()
+housing_cat_encoded = ordinal_encoder.fit_transform(housing_cat)
+# print(housing_cat_encoded[:10]) the encoded list
+# print(ordinal_encoder.categories_) list of categories
+# one hot encoding would be best becuase by nature ML algorithmn will think the categories that are close together in terms of their encoder number are more similar
+cat_encoder = OneHotEncoder()
+housing_cat_1hot = cat_encoder.fit_transform(housing_cat)
+# this will result in a SciPy sparse matrix - useful when memory becomes an issue
+# to convert to NumPy array do the following
+housing_cat_1hot.toarray()
+# print(cat_encoder.categories_) to print out the categories
+
+# ****CUSTOM TRANSFORMERS****
+# own tasks for custom cleanup operations or combing attributes
+# must work with Scikit-Learn functions such as pipelines
+# implement fit, transform, and fit_transform (transformerMixin base class
+# baseestimator base class useful for automatic hyperparameter tuning
+rooms_ix, bedrooms_ix, population_ix, households_ix = 3, 4, 5, 6
+class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
+    def __init__(self, add_bedrooms_per_room = True): # no *args or **kargs
+        self.add_bedrooms_per_room = add_bedrooms_per_room
+    def fit(self, X, y=None):
+        return self # nothing else to do
+    def transform(self, X, y=None):
+        rooms_per_household = X[:, rooms_ix] / X[:, households_ix]
+        population_per_household = X[:, population_ix] / X[:, households_ix]
+        if self.add_bedrooms_per_room:
+            bedrooms_per_room = X[:, bedrooms_ix] / X[:, rooms_ix]
+            return np.c_[X, rooms_per_household, population_per_household, bedrooms_per_room]
+        else:
+            return np.c_[X, rooms_per_household, population_per_household]
+
+attr_adder = CombinedAttributesAdder(add_bedrooms_per_room=False)
+housing_extra_attribs = attr_adder.transform(housing.values)
+
+# ****FEATURE SCALING****
+# standardize, normalize highly scaled data (can be see in the scatter plot)
+# Min-max scaling (normalization) and StandardScaler
+
+# ***Transformation Pipelines***
+# helps with sequences of transformations
+# pipeline for numerical attributes:
+num_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('attribs_adder', CombinedAttributesAdder()),
+        ('std_scaler', StandardScaler()),
+])
+
+housing_num_tr = num_pipeline.fit_transform(housing_num)
+# for numerical and categorical pipeline using column transformer method
