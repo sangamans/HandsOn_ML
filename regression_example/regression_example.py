@@ -183,3 +183,12 @@ num_pipeline = Pipeline([
 
 housing_num_tr = num_pipeline.fit_transform(housing_num)
 # for numerical and categorical pipeline using column transformer method
+num_attribs = list(housing_num)
+cat_attribs = ["ocean_proximity"]
+
+full_pipeline = ColumnTransformer([
+    ("num", num_pipeline, num_attribs),
+    ("cat", OneHotEncoder(), cat_attribs),
+])
+housing_prepared = full_pipeline.fit_transform(housing)
+
