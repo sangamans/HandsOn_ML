@@ -14,7 +14,12 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+from
 
 # fetching the data
 DOWNLOAD_ROUTE = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
@@ -192,3 +197,12 @@ full_pipeline = ColumnTransformer([
 ])
 housing_prepared = full_pipeline.fit_transform(housing)
 
+# ***TRAINING AND EVALUATING TRAINING SET***
+lin_reg = LinearRegression()
+lin_reg.fit(housing_prepared, housing_labels)
+# measuring the rmse on the traning set
+housing_predictions = lin_reg.predict(housing_prepared)
+lin_mse = mean_squared_error(housing_labels, housing_predictions)
+lin_rmse = np.sqrt(lin_mse)
+# print(lin_rmse) to view the root mean square error - prediction error of $68,628; too big
+# use Decision Tree Regressor for better results; can identify nonlinear relationships
