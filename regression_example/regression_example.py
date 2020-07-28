@@ -19,7 +19,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-from
+from sklearn.tree import DecisionTreeRegressor
 
 # fetching the data
 DOWNLOAD_ROUTE = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
@@ -206,3 +206,10 @@ lin_mse = mean_squared_error(housing_labels, housing_predictions)
 lin_rmse = np.sqrt(lin_mse)
 # print(lin_rmse) to view the root mean square error - prediction error of $68,628; too big
 # use Decision Tree Regressor for better results; can identify nonlinear relationships
+tree_reg =  DecisionTreeRegressor()
+tree_reg.fit(housing_prepared, housing_labels)
+# measurung the tree rmse
+housing_predictions = tree_reg.predict(housing_prepared)
+tree_mse = mean_squared_error(housing_labels, housing_predictions)
+tree_rmse = np.sqrt(tree_mse)
+# print(tree_rmse) to view the rmse - ends up being 0! 
