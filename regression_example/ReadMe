@@ -1,0 +1,3 @@
+Example code from Chapter 2 that goes through the process of cleaning data, picking the best model, optimizing hyperparameters, handling Categorical Attributes, Feature Scaling, and using Pipelines
+Mainly used the Scikit-Learn Library
+** Completed **
