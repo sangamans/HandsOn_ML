@@ -28,3 +28,6 @@ y = y.astype(np.uint8)
 
 # creating test set and train set - MNIST data set was already split this way
 X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:]
+
+# ****TRAINING BINARY CLASSIFIER****
+# for exaple
