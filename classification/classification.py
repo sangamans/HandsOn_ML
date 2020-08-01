@@ -55,7 +55,7 @@ sgd_clf.fit(X_train, y_train_5)
 
 # Confusion Matrix
 # example: the number of times the classifier confused images of 5s with 3s, you would look in the 5th row and 3rd column of the confusion matrix
-# use cross val predict to perform K-fold cross-validation, but instead of returning scores returns scores made at each test fold
+# use cross val predict to perform K-fold cross-validation, but instead of returning scores returns predictions made at each test fold
 y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)
 # dont want to use the test set yet because that is only at the very end
 # now get the confusion matrix
@@ -70,3 +70,9 @@ y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)
 # F-score: harmonic mean of the precision and recall - 2*(p*r/p+r)
 # f1_score(y_train_5, y_train_pred) >>> 0.7420962043663375
 # increasing precision, decreases recall and vice versa
+
+# Thresholding Technique
+# see the decision scores with decision_function()
+y_scores = sgd_clf.decision_function([some_digit]) # array([2412.53175101])
+y_some_digit_pred = (y_scores > threshold) # array([ True])
+# return score for each instance and make predictions based on those scores with any threshold
