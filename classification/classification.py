@@ -10,6 +10,9 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_score, recall_score
 from sklearn.metrics import f1_score
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
 
 # load the MNIST dataset
 mnist = fetch_openml("mnist_784", version=1)
@@ -74,5 +77,55 @@ y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)
 # Thresholding Technique
 # see the decision scores with decision_function()
 y_scores = sgd_clf.decision_function([some_digit]) # array([2412.53175101])
+threshold = 0
 y_some_digit_pred = (y_scores > threshold) # array([ True])
 # return score for each instance and make predictions based on those scores with any threshold
+# now increase the threshold; classifier detects 
+threshold = 8000
+y_some_digit_pred = (y_scores > threshold)
+y_some_digit_pred #array([False])
+# NOTE: raising threshold decreases recall
+
+# how to select threshold?
+# get scores of all instances using the cross val predict function
+y_scores = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3, method="decision_function")
+# compute precision and recall for all possible thresholds
+precisions, recalls, thresholds = precision_recall_curve(y_train_5, y_scores)
+# plot the precision, recall vs threshold :
+#def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
+#plt.plot(thresholds, precisions[:-1], "b--", label="Precision")
+#plt.plot(thresholds, recalls[:-1], "g-", label="Recall")
+#[...] # highlight the threshold, add the legend, axis label and grid
+#plot_precision_recall_vs_threshold(precisions, recalls, thresholds)
+#plt.show()
+
+# to find a threshold for a certain precision percent (90% in this case):
+threshold_90_precision = thresholds[np.argmax(precisions >= 0.90)] # ~7816
+# now check precision and recall for 90% threshold
+y_train_pred_90 = (y_scores >= threshold_90_precision)
+precision_score(y_train_5, y_train_pred_90) # 0.9000380083618396
+recall_score(y_train_5, y_train_pred_90) # 0.4368197749492714
+
+# **** THE ROC CURVE ****
+# Recevier Operating Characteristic - insted of precision vs recall, ROC plots true positive rate (recall or TPR) vs false positive rate
+# FPR is ratio of negative instances tat are incorrectly classified as positive (1 - true negative rate)
+# true negative rate AKA TNR AKA specificity
+# so ROC plots sensitivity (recall) vs 1 - specificity
+fpr, tpr, thresholds = roc_curve(y_train_5, y_scores)
+# To Plot:
+#def plot_roc_curve(fpr, tpr, label=None):
+#plt.plot(fpr, tpr, linewidth=2, label=label)
+#plt.plot([0, 1], [0, 1], 'k--') # dashed diagonal
+#[...] # Add axis labels and grid
+#plot_roc_curve(fpr, tpr)
+#plt.show()
+# Note: good classifier stays as far away from the dashed diagnonal as possible
+
+# another way is AUC (area under the curve) - perfect classifier will have AUC of 1, random classifier has 0.5
+# use scik-kit learn function to compute ROC AUC
+roc_auc_score(y_train_5, y_scores) # 0.9611778893101814
+
+# BIG NOTE: 
+# use precision and recall when positive class is rare or care more for false positive than flase negatives
+# use ROC otherwise
+
