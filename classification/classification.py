@@ -108,7 +108,7 @@ recall_score(y_train_5, y_train_pred_90) # 0.4368197749492714
 
 # **** THE ROC CURVE ****
 # Recevier Operating Characteristic - insted of precision vs recall, ROC plots true positive rate (recall or TPR) vs false positive rate
-# FPR is ratio of negative instances tat are incorrectly classified as positive (1 - true negative rate)
+# FPR is ratio of negative instances that are incorrectly classified as positive (1 - true negative rate)
 # true negative rate AKA TNR AKA specificity
 # so ROC plots sensitivity (recall) vs 1 - specificity
 fpr, tpr, thresholds = roc_curve(y_train_5, y_scores)
@@ -128,4 +128,79 @@ roc_auc_score(y_train_5, y_scores) # 0.9611778893101814
 # BIG NOTE: 
 # use precision and recall when positive class is rare or care more for false positive than flase negatives
 # use ROC otherwise
+
+# **** MULTICLASS CLASSIFICATION**** 
+# aka multinodal classifier
+# algorithms capable of handling multiple classes like Random Fores and Naive Bayes Classification
+
+# or you can use multiple binary classifiers (linear and SVM):
+# One Versus All strategy(OvA): train binary classifier for each class and you get the decision score from each binary classifier and choose the highest
+# One Versus One strategy(OvO): train binar classifier for every pair of class
+
+# Scikit-Learn detects when you try to use a binary classification algorithm for a multiclass classification task, and it automatically runs OvA
+sgd_clf.fit(X_train, y_train)
+# sgd_clf.predict([some_digit]) >>> array([5], dtype=uint8)
+some_digit_scores = sgd_clf.decision_function([some_digit]) # you can get the deicion scores for each class
+
+# if you want to use OvO classifier:
+from sklearn.multiclass import OneVsOneClassifier
+ovo_clf = OneVsOneClassifier(SGDClassifier(random_state=42))
+ovo_clf.fit(X_train, y_train)
+ovo_clf.predict([some_digit]) # array([5], dtype=uint8)
+
+# training the Random Forest Classifier
+forest_clf.fit(X_train, y_train)
+forest_clf.predict([some_digit]) # array([5], dtype=uint8)
+# to view the list of probabilities for each class
+forest_clf.predict_proba([some_digit]) # array([[0. , 0. , 0.01, 0.08, 0. , 0.9 , 0. , 0. , 0. , 0.01]])
+
+# evaluate the accuracy usuing cross val score
+cross_val_score(sgd_clf, X_train, y_train, cv=3, scoring="accuracy") # array([0.8489802 , 0.87129356, 0.86988048])
+# can increase accuracy by scaling the inputs
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train.astype(np.float64))
+cross_val_score(sgd_clf, X_train_scaled, y_train, cv=3, scoring="accuracy") # array([0.89707059, 0.8960948 , 0.90693604])
+
+# ****ERROR ANALYSIS****
+# look at the confusion matrix with the cors val predict function
+y_train_pred = cross_val_predict(sgd_clf, X_train_scaled, y_train, cv=3)
+conf_mx = confusion_matrix(y_train, y_train_pred) 
+#array([[5578, 0, 22, 7, 8, 45, 35, 5, 222, 1],
+#[ 0, 6410, 35, 26, 4, 44, 4, 8, 198, 13],
+#[ 28, 27, 5232, 100, 74, 27, 68, 37, 354, 11],
+#[ 23, 18, 115, 5254, 2, 209, 26, 38, 373, 73],
+#[ 11, 14, 45, 12, 5219, 11, 33, 26, 299, 172],
+#[ 26, 16, 31, 173, 54, 4484, 76, 14, 482, 65],
+#[ 31, 17, 45, 2, 42, 98, 5556, 3, 123, 1],
+#[ 20, 10, 53, 27, 50, 13, 3, 5696, 173, 220],
+#[ 17, 64, 47, 91, 3, 125, 24, 11, 5421, 48],
+#[ 24, 18, 29, 67, 116, 39, 1, 174, 329, 5152]])
+# fairly good confusion matrix because the diagonal has most images
+# use the following to visualize the confusion matrix
+plt.matshow(conf_mx, cmap=plt.cm.gray)
+plt.show()
+# now to plot the errors:
+# divide each value in the confusion matrix by the number of images in the corresponding class to compare error rates
+row_sums = conf_mx.sum(axis=1, keepdims=True)
+norm_conf_mx = conf_mx / row_sums
+# plot the error rates
+np.fill_diagonal(norm_conf_mx, 0)
+plt.matshow(norm_conf_mx, cmap=plt.cm.gray)
+plt.show()
+# NOTE: rows represent classes and columns represent predicted classes; more bright means higher error rate
+
+# ****MULTILABEL CLASSIFICATION****
+# when classifier needs to output multiple classes for each instance
+from sklearn.neighbors import KNeighborsClassifier
+
+y_train_large = (y_train >= 7)
+y_train_odd = (y_train % 2 == 1)
+y_multilabel = np.c_[y_train_large, y_train_odd]
+
+knn_clf.fit(X_train, y_multilabel)
+# the y_multilabel created two target labels for each digit image
+# and now a prediction is possible
+knn_clf.predict([some_digit]) # array([[False, True]])
+# (says that the The digit 5 is indeed not large (False) and odd (True).)
 
