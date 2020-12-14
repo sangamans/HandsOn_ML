@@ -1,5 +1,5 @@
 # example from chapter 2 of the book
-# practice with univariate regression
+# practice with univariate regression to see the end to end process of a data science project
 # dataset based on 1990 California Census - predict a district's median housing price
 import os
 import tarfile

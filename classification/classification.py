@@ -1,5 +1,5 @@
-# example from chapter 2 of the book
-# practice with classification systems to see the end to end process of a data science project
+# example from chapter 3 of the book
+# practice with classification systems 
 # dataset based MNIST which is a set of 70,000 small digits handwritten by high school students and emplyees of US Census Buraeu
 from sklearn.datasets import fetch_openml
 import numpy as np
